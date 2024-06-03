@@ -8,11 +8,6 @@ use tokio;
 #[derive(Parser)]
 struct Args {}
 
-// const default_config_path
-
-const TOKEN: &str = "pat_FufCiN8D7bi0UWTFqcTlvSTG5uqIniAUFcRScauKyTWsSr9KT0pqFqsg4TzG2Xtj";
-const BOT_ID: &str = "7376178220695650356";
-
 fn read_git_diff() -> Result<String> {
     let status = std::process::Command::new("git")
         .arg("status")
@@ -36,13 +31,15 @@ fn read_git_diff() -> Result<String> {
 async fn main() {
     let _args = Args::parse();
 
-    // let query = "123456";
-
-    let diff = read_git_diff().unwrap();
-
-    // let resp = coze::request_bot(BOT_ID, TOKEN, query).await;
-    // if let Ok(resp) = resp {
-    //     let message = coze::parse_commit_message(resp).await.unwrap();
-    //     println!("{}", message);
-    // }
+    if let Some(config) = config::read_config() {
+        let diff = read_git_diff().unwrap();
+        let resp = coze::request_bot(&config.bot_id, &config.token, &diff).await;
+        if let Ok(resp) = resp {
+            let message = coze::parse_commit_message(resp).await.unwrap();
+            println!("{}", message);
+        }
+    } else {
+        println!("Please set your config file first.");
+        println!("Default path: ~/.gitc");
+    }
 }
