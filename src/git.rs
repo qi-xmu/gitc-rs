@@ -8,12 +8,10 @@ pub fn git_commit(git_base: &str, message: &str) -> Result<()> {
 
     let tree_id = index.write_tree()?;
     let tree = repo.find_tree(tree_id)?;
-    println!("Tree: {:?}", tree);
-    println!("Tree id: {:?}", tree_id);
 
     let parent_commit = repo.head()?.resolve()?.peel_to_commit()?;
 
-    println!("Parent commit: {:?}", parent_commit);
+    println!("Parent commit: {}", parent_commit.summary().unwrap_or(""));
 
     repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])?;
 
