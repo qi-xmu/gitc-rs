@@ -24,6 +24,8 @@ async fn main() {
                     .expect("Request bot failed.");
                 if let Ok(message) = coze::parse_commit_message(resp).await {
                     git::git_commit(&repo, &message).unwrap();
+
+                    println!("Commit message: {}", message);
                 }
             } else {
                 println!("No changes to commit.");
