@@ -12,3 +12,4 @@ reqwest = "0.12.4"
 # serde = { version = "1.0.203", features = ["derive"] }
 json = "0.12.4"
 anyhow = "1.0.86"
+git2 = "0.18.3"
