@@ -20,7 +20,6 @@ async fn main() {
 
             // commit
             if let Ok(git_base) = git::get_git_base_path() {
-                println!("Git base path: {}", git_base);
                 git::git_commit(&git_base, &message).unwrap();
             } else {
                 println!("Git project not found.");
