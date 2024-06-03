@@ -13,9 +13,21 @@ pub fn git_commit(git_base: &str, message: &str) -> Result<()> {
 
     println!("Parent commit: {}", parent_commit.summary().unwrap_or(""));
 
-    repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])?;
+    let statuses = repo.statuses(None)?;
 
-    println!("Commit success");
+    let commit_or_not = statuses.iter().any(|status| {
+        status.status().is_index_new()
+            || status.status().is_index_modified()
+            || status.status().is_index_deleted()
+    });
+
+    if commit_or_not {
+        // repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])?;
+        println!("Commit success");
+    } else {
+        println!("No changes to commit");
+    }
+
     Ok(())
 }
 

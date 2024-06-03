@@ -13,6 +13,9 @@ async fn main() {
 
     if let Some(config) = config::read_config() {
         let diff = git::read_git_diff().unwrap();
+
+
+
         let resp = coze::request_bot(&config.bot_id, &config.token, &diff).await;
         if let Ok(resp) = resp {
             let message = coze::parse_commit_message(resp).await.unwrap();
