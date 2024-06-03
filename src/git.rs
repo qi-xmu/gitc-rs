@@ -38,7 +38,6 @@ pub fn git_commit(repo: &Repository, message: &str) -> Result<()> {
         println!("Parent commit: {}", parent_commit.summary().unwrap_or(""));
 
         repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])?;
-        println!("Commit success");
     } else {
         println!("No changes to commit");
     }
