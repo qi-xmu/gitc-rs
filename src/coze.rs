@@ -38,8 +38,34 @@ pub async fn request_bot(bot_id: &str, token: &str, query: &str) -> R<Response> 
 pub async fn parse_commit_message(resp: Response) -> R<String> {
     let text = resp.text().await.unwrap();
     let obj = json::parse(&text)?;
+    let code = obj["code"].to_string();
+    if code == "0" {
+        let message = obj["messages"][0]["content"].to_string();
+        if message.is_empty() {
+            return Err(anyhow::anyhow!("Empty message."));
+        }
+        Ok(message)
+    } else {
+        Err(anyhow::anyhow!("Empty messages."))
+    }
+}
 
-    let message = obj["messages"][0]["content"].to_string();
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config;
 
-    Ok(message)
+    #[tokio::test]
+    async fn test_request_bot() {
+        let config = config::read_config().unwrap();
+        let resp = request_bot(&config.bot_id, &config.token, "test")
+            .await
+            .unwrap();
+
+        // println!("{:?}", resp.text().await.unwrap());
+        let message = parse_commit_message(resp)
+            .await
+            .expect("Parse message failed.");
+        println!("{:?}", message);
+    }
 }
