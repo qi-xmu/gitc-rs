@@ -1,4 +1,4 @@
-# Git Commit Helper git 注释提交助手
+# Git Commit Helper 注释提交助手
 
 使用说明：Git Commit Helper是一个用于生成Git提交注释的工具，旨在帮助开发者遵循一致的提交注释格式。
 
