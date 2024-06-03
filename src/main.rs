@@ -12,21 +12,24 @@ async fn main() {
     let _args = Args::parse();
 
     if let Some(config) = config::read_config() {
-        let diff = git::read_git_diff().unwrap();
-
-
-
-        let resp = coze::request_bot(&config.bot_id, &config.token, &diff).await;
-        if let Ok(resp) = resp {
-            let message = coze::parse_commit_message(resp).await.unwrap();
-            println!("{}", message);
-
-            // commit
-            if let Ok(git_base) = git::get_git_base_path() {
-                git::git_commit(&git_base, &message).unwrap();
+        // git exist
+        if let Ok(git_base) = git::get_git_base_path() {
+            let repo = git::get_reop(&git_base).unwrap();
+            // git has changes
+            if git::commit_or_not(&repo).is_ok() {
+                let diff = git::read_git_diff().unwrap();
+                // request bot for commit message
+                let resp = coze::request_bot(&config.bot_id, &config.token, &diff)
+                    .await
+                    .expect("Request bot failed.");
+                if let Ok(message) = coze::parse_commit_message(resp).await {
+                    git::git_commit(&repo, &message).unwrap();
+                }
             } else {
-                println!("Git project not found.");
+                println!("No changes to commit.");
             }
+        } else {
+            println!("Git project not found.");
         }
     } else {
         println!("Please set your config file first.");

@@ -1,18 +1,11 @@
 use anyhow::Result;
 use git2::Repository;
-pub fn git_commit(git_base: &str, message: &str) -> Result<()> {
-    let repo = Repository::open(git_base)?;
-    let mut index = repo.index()?;
 
-    let sig = repo.signature()?;
-
-    let tree_id = index.write_tree()?;
-    let tree = repo.find_tree(tree_id)?;
-
-    let parent_commit = repo.head()?.resolve()?.peel_to_commit()?;
-
-    println!("Parent commit: {}", parent_commit.summary().unwrap_or(""));
-
+pub fn get_reop(path: &str) -> Result<Repository> {
+    let repo = Repository::open(path)?;
+    Ok(repo)
+}
+pub fn commit_or_not(repo: &Repository) -> Result<()> {
     let statuses = repo.statuses(None)?;
 
     let commit_or_not = statuses.iter().any(|status| {
@@ -22,7 +15,29 @@ pub fn git_commit(git_base: &str, message: &str) -> Result<()> {
     });
 
     if commit_or_not {
-        // repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])?;
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!("No changes to commit"))
+    }
+}
+
+pub fn git_commit(repo: &Repository, message: &str) -> Result<()> {
+    let statuses = repo.statuses(None)?;
+    let commit_or_not = statuses.iter().any(|status| {
+        status.status().is_index_new()
+            || status.status().is_index_modified()
+            || status.status().is_index_deleted()
+    });
+
+    if commit_or_not {
+        let mut index = repo.index()?;
+        let sig = repo.signature()?;
+        let tree_id = index.write_tree()?;
+        let tree = repo.find_tree(tree_id)?;
+        let parent_commit = repo.head()?.resolve()?.peel_to_commit()?;
+        println!("Parent commit: {}", parent_commit.summary().unwrap_or(""));
+
+        repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[&parent_commit])?;
         println!("Commit success");
     } else {
         println!("No changes to commit");
@@ -72,5 +87,6 @@ pub fn get_git_base_path() -> Result<String> {
 fn test_git_commit() {
     let git_base = get_git_base_path().unwrap();
     let message = "test commit";
-    git_commit(&git_base, message).unwrap();
+    let repo = get_reop(&git_base).unwrap();
+    git_commit(&repo, message).unwrap();
 }
