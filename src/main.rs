@@ -52,12 +52,13 @@ async fn main() {
                 return;
             }
         }
-        // git push
-        if args.push {
-            git::git_push(&repo).expect("Git push failed.");
-            println!("Git push success.");
-        }
     } else {
         println!("No changes to commit.");
+    }
+
+    // git push
+    if args.push {
+        git::git_push(&repo).expect("Git push failed.");
+        println!("Git push success.");
     }
 }
