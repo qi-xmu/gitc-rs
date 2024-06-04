@@ -29,8 +29,14 @@ async fn main() {
             .await
             .expect("Request bot failed.");
 
+        let confirm = config.confirm && !args.yes;
+
         // 询问是否提交
-        while !args.yes {
+        if !confirm {
+            println!("* Commit message: \n{}\n", message);
+            git::git_commit(&repo, &message).expect("Commit failed.");
+        }
+        while confirm {
             println!("* Commit message: \n{}\n", message);
             let ch = git::get_input_char();
             if ch == "y" {
@@ -46,7 +52,6 @@ async fn main() {
                 return;
             }
         }
-
         // git push
         if args.push {
             git::git_push(&repo).expect("Git push failed.");

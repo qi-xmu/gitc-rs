@@ -10,6 +10,7 @@ const DEFAULT_CONFIG_NAME: &str = ".gitc";
 pub struct Config {
     pub bot_id: String,
     pub token: String,
+    pub confirm: bool,
 }
 
 impl Config {
@@ -21,6 +22,7 @@ impl Config {
         Config {
             bot_id: config_json["bot_id"].to_string(),
             token: config_json["token"].to_string(),
+            confirm: config_json["confirm"].as_bool().unwrap_or(true),
         }
     }
 
@@ -28,6 +30,7 @@ impl Config {
         let config_json = object! {
             "bot_id": self.bot_id.to_owned(),
             "token": self.token.to_owned(),
+            "confirm": self.confirm
         };
 
         std::fs::write(path, config_json.dump())?;
