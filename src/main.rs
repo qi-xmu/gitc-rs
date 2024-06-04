@@ -2,6 +2,8 @@ mod config;
 mod coze;
 mod git;
 
+use std::io::{Read, Write};
+
 use clap::Parser;
 
 #[derive(Parser)]
@@ -29,12 +31,15 @@ async fn main() {
                 let mut input = String::new();
                 println!("Commit message: {}", message);
                 print!("Do you want to commit? (y/n) ");
+                std::io::stdout().flush().unwrap();
                 std::io::stdin().read_line(&mut input).unwrap();
                 if input.trim() == "y" {
                     git::git_commit(&repo, &message).unwrap();
                     println!("Commit message: {}", message);
+                    break;
                 } else if input.trim() == "n" {
                     println!("Commit canceled.");
+                    break;
                 }
             }
         } else {
