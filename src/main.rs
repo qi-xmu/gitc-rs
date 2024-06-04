@@ -28,12 +28,13 @@ async fn main() {
             loop {
                 let mut input = String::new();
                 println!("Commit message: {}", message);
-                println!("Do you want to commit? (y/n)");
+                print!("Do you want to commit? (y/n) ");
                 std::io::stdin().read_line(&mut input).unwrap();
                 if input.trim() == "y" {
                     git::git_commit(&repo, &message).unwrap();
                     println!("Commit message: {}", message);
-                    break;
+                } else if input.trim() == "n" {
+                    println!("Commit canceled.");
                 }
             }
         } else {
