@@ -49,6 +49,17 @@ pub fn git_commit(repo: &Repository, message: &str) -> Result<()> {
     Ok(())
 }
 
+pub fn git_push(_repo: &Repository) -> Result<()> {
+    let output = std::process::Command::new("git")
+        .arg("push")
+        .output()
+        .expect("failed to execute process");
+
+    std::io::stdout().write_all(&output.stdout)?;
+    std::io::stderr().write_all(&output.stderr)?;
+    Ok(())
+}
+
 pub fn git_diff_cached(has_status: bool) -> Result<String> {
     let status = if has_status {
         let status = std::process::Command::new("git")

@@ -28,8 +28,8 @@ async fn main() {
         let mut message = coze::coze_commit_message(&config, &diff)
             .await
             .expect("Request bot failed.");
-        // 询问是否提交
 
+        // 询问是否提交
         while !args.yes {
             println!("* Commit message: \n{}\n", message);
             let ch = git::get_input_char();
@@ -45,6 +45,12 @@ async fn main() {
                 println!("Commit canceled.");
                 return;
             }
+        }
+
+        // git push
+        if args.push {
+            git::git_push(&repo).expect("Git push failed.");
+            println!("Git push success.");
         }
     } else {
         println!("No changes to commit.");
