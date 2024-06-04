@@ -23,29 +23,27 @@ async fn main() {
 
     // git has changes
     if git::commit_or_not(&repo).is_ok() {
-        loop {
-            let diff = git::git_diff_cached(false).unwrap();
-            // request bot for commit message
-            let mut message = coze::coze_commit_message(&config, &diff)
-                .await
-                .expect("Request bot failed.");
-            // 询问是否提交
+        let diff = git::git_diff_cached(false).unwrap();
+        // request bot for commit message
+        let mut message = coze::coze_commit_message(&config, &diff)
+            .await
+            .expect("Request bot failed.");
+        // 询问是否提交
 
-            while !args.yes {
-                println!("* Commit message: \n{}\n", message);
-                let ch = git::get_input_char();
-                if ch == "y" {
-                    git::git_commit(&repo, &message).expect("Commit failed.");
-                    break;
-                } else if ch == "r" {
-                    message = coze::coze_commit_message(&config, &diff)
-                        .await
-                        .expect("Request bot failed.");
-                    continue;
-                } else if ch == "n" {
-                    println!("Commit canceled.");
-                    return;
-                }
+        while !args.yes {
+            println!("* Commit message: \n{}\n", message);
+            let ch = git::get_input_char();
+            if ch == "y" {
+                git::git_commit(&repo, &message).expect("Commit failed.");
+                break;
+            } else if ch == "r" {
+                message = coze::coze_commit_message(&config, &diff)
+                    .await
+                    .expect("Request bot failed.");
+                continue;
+            } else if ch == "n" {
+                println!("Commit canceled.");
+                return;
             }
         }
     } else {

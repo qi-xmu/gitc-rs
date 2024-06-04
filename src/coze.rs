@@ -53,6 +53,7 @@ async fn parse_commit_message(resp: Response) -> R<String> {
 }
 
 pub async fn coze_commit_message(config: &Config, diff: &String) -> R<String> {
+    println!("Requesting bot...");
     let resp = request_bot(&config.bot_id, &config.token, diff)
         .await
         .expect("Request bot failed. Please check your config.");
