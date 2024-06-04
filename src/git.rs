@@ -3,10 +3,29 @@ use std::io::Write;
 use anyhow::Result;
 use git2::Repository;
 
+/// Opens a Git repository at the specified path.
+///
+/// # Arguments
+///
+/// * `path` - The path to the Git repository.
+///
+/// # Returns
+///
+/// Returns a `Result` containing the opened `Repository` if successful, or an `anyhow::Error` if an error occurs.
 pub fn get_reop(path: &str) -> Result<Repository> {
     let repo = Repository::open(path)?;
     Ok(repo)
 }
+
+/// Checks if there are any changes to commit in the repository.
+///
+/// # Arguments
+///
+/// * `repo` - The Git repository.
+///
+/// # Returns
+///
+/// Returns a `Result` indicating success or failure. If there are changes to commit, returns `Ok(())`. Otherwise, returns an `anyhow::Error` with the message "No changes to commit".
 pub fn commit_or_not(repo: &Repository) -> Result<()> {
     let statuses = repo.statuses(None)?;
 
@@ -23,6 +42,11 @@ pub fn commit_or_not(repo: &Repository) -> Result<()> {
     }
 }
 
+/// Reads a single character input from the user.
+///
+/// # Returns
+///
+/// Returns a `String` containing the user's input.
 pub fn get_input_char() -> String {
     print!("Do you want to commit? [y/r/n]");
     std::io::stdout().flush().unwrap();
@@ -31,12 +55,33 @@ pub fn get_input_char() -> String {
     std::io::stdin().read_line(&mut input).unwrap();
     input.trim().to_string()
 }
+
+/// Adds all changes to the Git repository's index.
+///
+/// # Arguments
+///
+/// * `repo` - The Git repository.
+///
+/// # Returns
+///
+/// Returns a `Result` indicating success or failure.
 pub fn git_add(repo: &Repository) -> Result<()> {
     let mut index = repo.index()?;
     index.add_all(["*"].iter(), git2::IndexAddOption::DEFAULT, None)?;
     index.write()?;
     Ok(())
 }
+
+/// Commits changes to the Git repository.
+///
+/// # Arguments
+///
+/// * `repo` - The Git repository.
+/// * `message` - The commit message.
+///
+/// # Returns
+///
+/// Returns a `Result` indicating success or failure.
 pub fn git_commit(repo: &Repository, message: &str) -> Result<()> {
     let mut index = repo.index()?;
     let sig = repo.signature()?;
@@ -49,6 +94,15 @@ pub fn git_commit(repo: &Repository, message: &str) -> Result<()> {
     Ok(())
 }
 
+/// Pushes changes to the remote Git repository.
+///
+/// # Arguments
+///
+/// * `_repo` - The Git repository.
+///
+/// # Returns
+///
+/// Returns a `Result` indicating success or failure.
 pub fn git_push(_repo: &Repository) -> Result<()> {
     let output = std::process::Command::new("git")
         .arg("push")
@@ -60,6 +114,15 @@ pub fn git_push(_repo: &Repository) -> Result<()> {
     Ok(())
 }
 
+/// Retrieves the diff of the changes in the Git repository's index.
+///
+/// # Arguments
+///
+/// * `has_status` - Indicates whether to include the repository's status in the diff.
+///
+/// # Returns
+///
+/// Returns a `Result` containing the diff as a `String` if successful, or an `anyhow::Error` if an error occurs.
 pub fn git_diff_cached(has_status: bool) -> Result<String> {
     let status = if has_status {
         let status = std::process::Command::new("git")
@@ -81,6 +144,11 @@ pub fn git_diff_cached(has_status: bool) -> Result<String> {
     Ok(res)
 }
 
+/// Retrieves the base path of the Git repository.
+///
+/// # Returns
+///
+/// Returns a `Result` containing the base path as a `String` if successful, or an `anyhow::Error` if an error occurs.
 pub fn git_base_path() -> Result<String> {
     let basepath = std::process::Command::new("git")
         .arg("rev-parse")
