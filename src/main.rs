@@ -1,49 +1,52 @@
+use clap::Parser as _;
+
+mod args;
 mod config;
 mod coze;
 mod git;
 
-use std::io::{Read, Write};
-
-use clap::Parser;
-
-#[derive(Parser)]
-struct Args {}
-
 #[tokio::main]
 async fn main() {
-    let _args = Args::parse();
+    let args = args::Args::parse();
     // read config
     let config =
         config::read_config().expect("Please set your config file first. Default path: ~/.gitc");
     // git exist
-    let git_base = git::get_git_base_path().expect("Git project not found.");
+    let git_base = git::git_base_path().expect("Git project not found.");
     let repo = git::get_reop(&git_base).expect("Git repo not found.");
+
+    // check if git add
+    if args.add_all {
+        git::git_add(&repo).expect("Git add failed.");
+        println!("Git add success.");
+    }
+
     // git has changes
     if git::commit_or_not(&repo).is_ok() {
-        let diff = git::read_git_diff().unwrap();
-        // request bot for commit message
-        let resp = coze::request_bot(&config.bot_id, &config.token, &diff)
-            .await
-            .expect("Request bot failed.");
-        if let Ok(message) = coze::parse_commit_message(resp).await {
+        loop {
+            let diff = git::git_diff_cached(false).unwrap();
+            // request bot for commit message
+            let mut message = coze::coze_commit_message(&config, &diff)
+                .await
+                .expect("Request bot failed.");
             // 询问是否提交
-            loop {
-                let mut input = String::new();
-                println!("Commit message: {}", message);
-                print!("Do you want to commit? (y/n) ");
-                std::io::stdout().flush().unwrap();
-                std::io::stdin().read_line(&mut input).unwrap();
-                if input.trim() == "y" {
-                    git::git_commit(&repo, &message).unwrap();
-                    println!("Commit message: {}", message);
+
+            while !args.yes {
+                println!("* Commit message: \n{}\n", message);
+                let ch = git::get_input_char();
+                if ch == "y" {
+                    git::git_commit(&repo, &message).expect("Commit failed.");
                     break;
-                } else if input.trim() == "n" {
+                } else if ch == "r" {
+                    message = coze::coze_commit_message(&config, &diff)
+                        .await
+                        .expect("Request bot failed.");
+                    continue;
+                } else if ch == "n" {
                     println!("Commit canceled.");
-                    break;
+                    return;
                 }
             }
-        } else {
-            println!("Empty message. Maybe config is wrong.");
         }
     } else {
         println!("No changes to commit.");
