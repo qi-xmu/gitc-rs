@@ -21,7 +21,6 @@ async fn main() {
         println!("Git add success.");
     }
 
-
     // git has changes
     if git::commit_or_not(&repo).is_ok() {
         let diff = git::git_diff_cached(false).unwrap();
